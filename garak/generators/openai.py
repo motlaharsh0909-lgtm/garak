@@ -315,7 +315,12 @@ class OpenAIGenerator(OpenAICompatible):
 
     def _load_client(self):
         self.client = openai.OpenAI(api_key=self.api_key)
-
+        try:
+            self.client.models.list()
+        except openai.AuthenticationError as e:
+            raise garak.exception.BadGeneratorException(
+                "Invalid OpenAI API key. Please check OPENAI_API_KEY."
+            ) from e
         if self.name == "":
             openai_model_list = sorted([m.id for m in self.client.models.list().data])
             raise ValueError(
